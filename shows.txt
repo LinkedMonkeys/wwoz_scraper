@@ -1,0 +1,7 @@
+# One entry per line. Either a show ID (the two numbers in the stream filename)
+# or title text (case/punctuation-insensitive). Run `python scrape.py --list-shows`
+# to see every ID on the page.
+29-157   # Traditional Jazz with Leslie Cooper
+16-170   # Blues in the Night with Jamie Dell'Apa
+4-182    # The Freaknologist Lunatique Show with David Kunian
+36-150   # Kitchen Sink with Jennifer Brady

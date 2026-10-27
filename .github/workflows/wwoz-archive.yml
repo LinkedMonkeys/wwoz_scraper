@@ -1,0 +1,61 @@
+name: WWOZ archive stream URLs
+
+on:
+  schedule:
+    - cron: "0 12 * * 1"   # Mondays 12:00 UTC (archive keeps two weeks, so weekly is safe)
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: "Print matched episodes and upload the raw HTML"
+        type: boolean
+        default: false
+      list_shows:
+        description: "Print every show ID/slug on the page instead of scraping"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Scrape
+        run: python scrape.py --days 7 ${{ inputs.debug && '--debug' || '' }} ${{ inputs.list_shows && '--list-shows' || '' }}
+
+      - name: Email results
+        if: ${{ !inputs.list_shows }}
+        env:
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: python send_email.py
+
+      - name: Upload raw HTML (debug only)
+        if: ${{ always() && inputs.debug }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: archive-html
+          path: output/archive.html
+
+      - name: Commit results
+        if: ${{ !inputs.list_shows }}
+        run: |
+          rm -f output/archive.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add output/streams.json output/streams.txt
+          git diff --cached --quiet || git commit -m "Update WWOZ stream URLs $(date -u +%F)"
+          git push
