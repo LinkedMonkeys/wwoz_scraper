@@ -31,7 +31,7 @@ def main():
     msg["To"] = os.environ["MAIL_TO"]
     msg.set_content(body)
 
-    port = int(os.environ.get("SMTP_PORT", "465"))
+    port = int(os.environ.get("SMTP_PORT") or "465")
     with smtplib.SMTP_SSL(os.environ["SMTP_SERVER"], port, timeout=30) as smtp:
         smtp.login(os.environ["SMTP_USERNAME"], os.environ["SMTP_PASSWORD"])
         smtp.send_message(msg)
