@@ -31,7 +31,7 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Scrape
-        run: python scrape.py --days 7 ${{ inputs.debug && '--debug' || '' }} ${{ inputs.list_shows && '--list-shows' || '' }}
+        run: python scrape.py --days 14 ${{ inputs.debug && '--debug' || '' }} ${{ inputs.list_shows && '--list-shows' || '' }}
 
       - name: Email results
         if: ${{ !inputs.list_shows }}
